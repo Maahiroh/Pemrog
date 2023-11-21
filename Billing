@@ -1,0 +1,160 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Stationery
+{
+    public partial class Billing : Form
+    {
+        public Billing()
+        {
+            Con = new Functions();
+            InitializeComponent();
+            ShowItems();
+
+        }
+
+        Functions Con;
+
+        private void ShowItems()
+        {
+            string Query = "Select * from ItemTbl";
+            // ini tanyain itemtbl bagian mana
+            dataGridView1.DataSource = Con.GetData(Query);
+        }
+
+        private void panel8_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        int Key = 0;
+        int Stock;
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            textBox1.Text = dataGridView1.SelectedRows[0].Cells[1].Value.ToString();
+            textBox2.Text = dataGridView1.SelectedRows[0].Cells[3].Value.ToString();
+            Stock = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[4].Value.ToString());
+
+            if (textBox1.Text == "")
+            {
+                Key = 0;
+            }
+            else 
+            {
+                Key = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[0].Value.ToString());
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = "";
+            textBox2.Text = "";
+        }
+
+        string PMethod = "";
+        int n = 0;
+        int GrdTotal = 0;
+
+        private void UpdateStock()
+        {
+            // minta codingan bagiannya ali
+            try
+            {
+                int NewStock = Stock - Convert.ToInt32(textBox2.Text);
+                string Query = "Update ItemTbl set ItStock = {0} where ItCode = {1}";
+                Query = string.Format(Query, NewStock, Key);
+                Con.SetData(Query);
+                ShowItems();
+                MessageBox.Show("Stock Updated!!!");
+            }
+            catch (Exception Ex) 
+            {
+                MessageBox.Show(Ex.Message);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (textBox2.Text == "" || textBox3.Text == "" || textBox1.Text == "")
+            {
+                MessageBox.Show("Missing Data!!!");
+            }
+            else if (Stock < Convert.ToInt32(textBox3.Text))
+            {
+                MessageBox.Show("Not Enaugh Stock!!!");
+            }
+            else
+            {
+                int Qte = Convert.ToInt32(textBox3.Text);
+                int total = Convert.ToInt32(textBox2.Text) * Qte;
+                DataGridViewRow newRow = new DataGridViewRow();
+                newRow.CreateCells(dataGridView2);
+                newRow.Cells[0].Value = n + 1;
+                newRow.Cells[1].Value = textBox1.Text;
+                newRow.Cells[2].Value = textBox2.Text;
+                newRow.Cells[3].Value = textBox3.Text;
+                newRow.Cells[4].Value = "Rp " + total;
+                dataGridView2.Rows.Add(newRow);
+                n++;
+                GrdTotal = GrdTotal + total;
+                GrdTotalLbl.Text = "Rp " + GrdTotal; // atasnya print bill
+                UpdateStock();
+                ShowItems();
+            }
+        }
+
+        private void label10_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            // ini harus minta tolong soalnya yang pertama gaada guna eplipse di laptop ku
+            if (textBox1.Text == "" || textBox4.Text == "")
+            {
+                MessageBox.Show("Missing Data!!!!!!");
+            }
+            else
+            {
+                try
+                {
+                    if (radioButton3.Checked == true)
+                    {
+                        PMethod = "Mobile";
+                    }
+                    else if (radioButton2.Checked == true)
+                    {
+                        PMethod = "Card";
+                    }
+                    else 
+                    {
+                        PMethod = "Cash";
+                    }
+
+                    string Name = textBox1.Text;
+
+                    string Query = "Insert into BillTbl values ('{0}','{1}','{2}','{3}',)";
+                    // ini gatau anjir nama nya beda beda Query = string.Format(Query, DateTime.Today.Date, );
+                    // tabel billtbl yang mana?
+                    Con.SetData(Query);
+                    ShowItems();
+                    MessageBox.Show("Bill Added!!!");
+
+                }
+                catch (Exception Ex)
+                {
+                    MessageBox.Show(Ex.Message);
+                }
+            }
+        }
+    }
+}
